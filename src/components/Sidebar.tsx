@@ -15,6 +15,7 @@ interface Props {
   onRemoveConnector: (id: string) => void
   onRemoveEffect: (id: string) => void
   onClear: () => void
+  onBack?: () => void
 }
 
 const GRID_PRESETS = [
@@ -35,6 +36,7 @@ export function Sidebar({
   onRemoveConnector,
   onRemoveEffect,
   onClear,
+  onBack,
 }: Props) {
   const paper = PAPER_SIZES.find((p) => p.id === paperId)!
   const hasItems = connectors.length > 0 || effects.length > 0
@@ -42,6 +44,11 @@ export function Sidebar({
   return (
     <aside className="sidebar">
       <header className="sidebar-brand">
+        {onBack && (
+          <button type="button" className="back-link" onClick={onBack}>
+            ← Alle spill
+          </button>
+        )}
         <p className="brand-name">Stigespill</p>
         <p className="brand-tag">Design ditt eget brett til trykk</p>
       </header>

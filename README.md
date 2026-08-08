@@ -1,12 +1,11 @@
-# Stigespill
+# Pappgit — Spill til trykk
 
-Webapp for å designe ditt eget stigespill til trykk.
+Webapp for å designe printbare arkspill:
 
-## Funksjoner
-
-- Velg papirstørrelse (A5–A1) med korrekte proporsjoner for trykkeri
-- Velg rutenett (8×8, 10×10, 12×12)
-- Dra fra én rute til en annen for å lage stige (opp) eller slange (ned)
+- **Stigespill** — stiger, slanger og spesialruter
+- **Bilbingo** — reisebingo med egne ruter
+- **Labyrint** — generert labyrint
+- **Finn fem feil** — to bilder med opptil fem forskjeller
 
 ## Utvikling
 
@@ -15,7 +14,7 @@ npm install
 npm run dev
 ```
 
-## Bygg og GitHub Pages
+## GitHub Pages
 
 ```bash
 npm run deploy

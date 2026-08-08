@@ -1,88 +1,29 @@
 import { useState } from 'react'
-import { Board } from './components/Board'
-import { Sidebar } from './components/Sidebar'
-import { ToolDock } from './components/ToolDock'
-import { getPaper } from './lib/paper'
-import { useBoardEditor } from './lib/useBoardEditor'
+import { GameHub } from './components/GameHub'
+import { BilbingoGame } from './games/BilbingoGame'
+import { FemFeilGame } from './games/FemFeilGame'
+import { LabyrintGame } from './games/LabyrintGame'
+import { StigespillGame } from './games/StigespillGame'
+import type { GameId } from './lib/games'
 import './App.css'
 
 export default function App() {
-  const {
-    state,
-    setPaper,
-    setGrid,
-    setTool,
-    dragStart,
-    dragCancel,
-    dropConnector,
-    placeEffect,
-    eraseAt,
-    removeConnector,
-    removeEffect,
-    clearAll,
-  } = useBoardEditor()
+  const [game, setGame] = useState<GameId | null>(null)
 
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const paper = getPaper(state.paperId)
+  if (game == null) {
+    return <GameHub onSelect={setGame} />
+  }
 
-  return (
-    <div className="app">
-      <Sidebar
-        paperId={state.paperId}
-        board={state.board}
-        connectors={state.connectors}
-        effects={state.effects}
-        selectedId={selectedId}
-        message={state.message}
-        onPaperChange={setPaper}
-        onGridChange={setGrid}
-        onRemoveConnector={(id) => {
-          removeConnector(id)
-          setSelectedId(null)
-        }}
-        onRemoveEffect={removeEffect}
-        onClear={() => {
-          clearAll()
-          setSelectedId(null)
-        }}
-      />
+  const back = () => setGame(null)
 
-      <main className="stage">
-        <ToolDock activeTool={state.activeTool} onToolChange={setTool} />
-
-        <div
-          className="paper-frame"
-          style={{ aspectRatio: `${paper.widthMm} / ${paper.heightMm}` }}
-          data-paper={paper.id}
-        >
-          <div className="paper-label">
-            {paper.id} · {paper.widthMm}×{paper.heightMm} mm
-          </div>
-          <div className="board-wrap">
-            <Board
-              board={state.board}
-              connectors={state.connectors}
-              effects={state.effects}
-              activeTool={state.activeTool}
-              dragFrom={state.dragFrom}
-              onDragStart={dragStart}
-              onDropConnector={dropConnector}
-              onDragCancel={dragCancel}
-              onPlaceEffect={placeEffect}
-              onEraseAt={eraseAt}
-              selectedId={selectedId}
-              onSelectConnector={(id) => {
-                if (id) {
-                  removeConnector(id)
-                  setSelectedId(null)
-                } else {
-                  setSelectedId(null)
-                }
-              }}
-            />
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+  switch (game) {
+    case 'stigespill':
+      return <StigespillGame onBack={back} />
+    case 'bilbingo':
+      return <BilbingoGame onBack={back} />
+    case 'labyrint':
+      return <LabyrintGame onBack={back} />
+    case 'femFeil':
+      return <FemFeilGame onBack={back} />
+  }
 }
