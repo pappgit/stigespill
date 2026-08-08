@@ -7,10 +7,10 @@ export interface LudoPlayer {
 }
 
 export const DEFAULT_LUDO_PLAYERS: LudoPlayer[] = [
-  { id: 'red', name: 'Rød', color: '#c43c2c' },
-  { id: 'green', name: 'Grønn', color: '#2a7a52' },
+  { id: 'red', name: 'Rød', color: '#c0392b' },
+  { id: 'green', name: 'Grønn', color: '#1e7a4d' },
   { id: 'yellow', name: 'Gul', color: '#d4a017' },
-  { id: 'blue', name: 'Blå', color: '#2f6f9a' },
+  { id: 'blue', name: 'Blå', color: '#1f6a96' },
 ]
 
 /** 15×15 classic Ludo layout cell kinds. */
@@ -27,10 +27,12 @@ export type LudoArrow = 'up' | 'down' | 'left' | 'right'
 export interface LudoCell {
   kind: LudoCellKind
   player?: LudoColor
-  /** Direction marker on start / entry cells. */
+  /** Direction marker on start / home-stretch cells. */
   arrow?: LudoArrow
-  /** True for the four classic star-safe squares. */
+  /** True for classic star-safe squares. */
   star?: boolean
+  /** Index along a home stretch (1 closest to start, 5 closest to center). */
+  stretchStep?: number
 }
 
 export interface LudoYard {
@@ -71,27 +73,47 @@ export function buildLudoGrid(_players: LudoPlayer[]): LudoCell[][] {
     }
   }
 
-  // Home stretches toward center
+  // Home stretches toward center (arrows point inward)
   for (let i = 1; i <= 5; i++) {
-    grid[7]![i] = { kind: 'home-stretch', player: 'red' }
-    grid[i]![7] = { kind: 'home-stretch', player: 'green' }
-    grid[7]![14 - i] = { kind: 'home-stretch', player: 'blue' }
-    grid[14 - i]![7] = { kind: 'home-stretch', player: 'yellow' }
+    grid[7]![i] = {
+      kind: 'home-stretch',
+      player: 'red',
+      arrow: 'right',
+      stretchStep: i,
+    }
+    grid[i]![7] = {
+      kind: 'home-stretch',
+      player: 'green',
+      arrow: 'down',
+      stretchStep: i,
+    }
+    grid[7]![14 - i] = {
+      kind: 'home-stretch',
+      player: 'blue',
+      arrow: 'left',
+      stretchStep: i,
+    }
+    grid[14 - i]![7] = {
+      kind: 'home-stretch',
+      player: 'yellow',
+      arrow: 'up',
+      stretchStep: i,
+    }
   }
 
-  // Start / safe cells with direction into the track
-  grid[6]![1] = { kind: 'safe', player: 'red', arrow: 'right', star: true }
-  grid[1]![8] = { kind: 'safe', player: 'green', arrow: 'down', star: true }
-  grid[8]![13] = { kind: 'safe', player: 'blue', arrow: 'left', star: true }
-  grid[13]![6] = { kind: 'safe', player: 'yellow', arrow: 'up', star: true }
+  // Start cells — colored entry with direction into the track
+  grid[6]![1] = { kind: 'safe', player: 'red', arrow: 'right' }
+  grid[1]![8] = { kind: 'safe', player: 'green', arrow: 'down' }
+  grid[8]![13] = { kind: 'safe', player: 'blue', arrow: 'left' }
+  grid[13]![6] = { kind: 'safe', player: 'yellow', arrow: 'up' }
 
-  // Extra classic safe stars on the outer track
+  // Classic star-safe squares on the outer track
   grid[8]![2] = { kind: 'safe', star: true }
   grid[2]![6] = { kind: 'safe', star: true }
   grid[6]![12] = { kind: 'safe', star: true }
   grid[12]![8] = { kind: 'safe', star: true }
 
-  // Center hub (rendered as wedges overlay; cells keep kind for layout)
+  // Center hub (rendered as wedges overlay)
   for (let r = 6; r <= 8; r++) {
     for (let c = 6; c <= 8; c++) {
       grid[r]![c] = { kind: 'center' }
