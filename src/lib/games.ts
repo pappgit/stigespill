@@ -23,7 +23,7 @@ export const GAMES: GameDef[] = [
   {
     id: 'ludo',
     title: 'Ludo',
-    blurb: 'Klassisk ludo-brett med egne lagnavn og farger til trykk.',
+    blurb: 'Premium ludo-brett med egne lagnavn, farger og midttittel.',
     glyph: '✦',
   },
   {
