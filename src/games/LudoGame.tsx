@@ -39,6 +39,20 @@ function StarGlyph() {
   )
 }
 
+/** Bold outline of the classic Ludo cross path. */
+function PathCrossOutline() {
+  // 15×15 grid units; path occupies rows/cols 6–8 (0-indexed)
+  const a = (6 / 15) * 100
+  const b = (9 / 15) * 100
+  const d = `M0 ${a}H${a}V0H${b}V${a}H100V${b}H${b}V100H${a}V${b}H0Z`
+  return (
+    <svg className="ludo-cross-outline" viewBox="0 0 100 100" aria-hidden>
+      <path d={d} className="ludo-cross-fill" />
+      <path d={d} className="ludo-cross-stroke" />
+    </svg>
+  )
+}
+
 function CenterHub({
   players,
   title,
@@ -58,6 +72,11 @@ function CenterHub({
     { player: 'red', points: '50,50 0,100 0,0' },
   ]
 
+  const label = (title || 'Ludo').trim()
+  const sub = subtitle.trim()
+  // Fit long titles by shrinking letter-spacing / size via class
+  const titleLen = label.length
+
   return (
     <div className="ludo-center-hub" aria-hidden>
       <svg className="ludo-center-svg" viewBox="0 0 100 100">
@@ -73,17 +92,35 @@ function CenterHub({
         <line x1="50" y1="50" x2="100" y2="0" className="ludo-center-seam" />
         <line x1="50" y1="50" x2="100" y2="100" className="ludo-center-seam" />
         <line x1="50" y1="50" x2="0" y2="100" className="ludo-center-seam" />
-        <circle cx="50" cy="50" r="22" className="ludo-center-ring-outer" />
-        <circle cx="50" cy="50" r="20.2" className="ludo-center-disc" />
-        <circle cx="50" cy="50" r="18.4" className="ludo-center-ring-inner" />
-      </svg>
-      <div className="ludo-center-copy">
-        <p className="ludo-center-kicker">Pappgit</p>
-        <p className="ludo-center-title">{title || 'Ludo'}</p>
-        {subtitle.trim() ? (
-          <p className="ludo-center-sub">{subtitle}</p>
+
+        <circle cx="50" cy="50" r="27" className="ludo-center-ring-outer" />
+        <circle cx="50" cy="50" r="25.2" className="ludo-center-disc" />
+        <circle cx="50" cy="50" r="23.4" className="ludo-center-ring-inner" />
+
+        <text
+          x="50"
+          y={sub ? 43.5 : 47}
+          textAnchor="middle"
+          className="ludo-svg-kicker"
+        >
+          Pappgit
+        </text>
+        <text
+          x="50"
+          y={sub ? 56 : 58}
+          textAnchor="middle"
+          className={
+            titleLen > 10 ? 'ludo-svg-title ludo-svg-title-long' : 'ludo-svg-title'
+          }
+        >
+          {label.toUpperCase()}
+        </text>
+        {sub ? (
+          <text x="50" y="65.5" textAnchor="middle" className="ludo-svg-sub">
+            {sub.toUpperCase()}
+          </text>
         ) : null}
-      </div>
+      </svg>
     </div>
   )
 }
@@ -189,8 +226,14 @@ export function LudoGame({ onBack }: Props) {
           }
         >
           <div className="ludo-board-wash" aria-hidden />
+          <span className="ludo-frame-chip ludo-frame-chip-red" aria-hidden />
+          <span className="ludo-frame-chip ludo-frame-chip-green" aria-hidden />
+          <span className="ludo-frame-chip ludo-frame-chip-yellow" aria-hidden />
+          <span className="ludo-frame-chip ludo-frame-chip-blue" aria-hidden />
 
           <div className="ludo-playfield">
+            <PathCrossOutline />
+
             <div className="ludo-grid">
               {grid.map((row, r) =>
                 row.map((cell, c) => {
@@ -221,7 +264,6 @@ export function LudoGame({ onBack }: Props) {
                         'ludo-cell',
                         `ludo-${cell.kind}`,
                         cell.star ? 'ludo-has-star' : '',
-                        cell.arrow ? 'ludo-has-arrow' : '',
                         isStart ? 'ludo-start' : '',
                         isStretch ? 'ludo-stretch' : '',
                         isStretch && cell.stretchStep === 5
@@ -232,10 +274,13 @@ export function LudoGame({ onBack }: Props) {
                         .join(' ')}
                       style={style}
                     >
-                      {isStretch && cell.arrow ? (
+                      {isStart && cell.arrow ? (
                         <ArrowGlyph dir={cell.arrow} />
                       ) : null}
-                      {isStart && cell.arrow ? (
+                      {isStretch &&
+                      cell.arrow &&
+                      cell.stretchStep &&
+                      cell.stretchStep % 2 === 1 ? (
                         <ArrowGlyph dir={cell.arrow} />
                       ) : null}
                       {cell.star ? <StarGlyph /> : null}
