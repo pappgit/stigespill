@@ -398,12 +398,12 @@ button {
 .cell {
   position: relative;
   z-index: 1;
-  display: grid;
-  place-items: center;
+  display: block;
+  overflow: hidden;
   border-right: 1px solid var(--paper-line);
   border-bottom: 1px solid var(--paper-line);
   background: color-mix(in srgb, var(--paper) 92%, #fff);
-  transition: background 140ms ease, transform 140ms ease;
+  transition: background 140ms ease;
   cursor: crosshair;
   touch-action: none;
 }
@@ -420,44 +420,83 @@ button {
   pointer-events: none;
 }
 
-.cell-number {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  font-size: clamp(0.55rem, 1.4vw, 0.85rem);
-  color: var(--ink);
+.cell-fill {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   pointer-events: none;
 }
 
 .cell-glyph {
-  position: absolute;
-  right: 8%;
-  bottom: 6%;
-  font-size: clamp(0.65rem, 1.6vw, 1rem);
+  font-size: clamp(1rem, 4.2vw, 2.1rem);
   font-weight: 800;
   line-height: 1;
+  opacity: 0.95;
+}
+
+.cell-number {
+  position: absolute;
+  right: 5%;
+  bottom: 3%;
+  z-index: 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: clamp(0.45rem, 1vw, 0.7rem);
+  line-height: 1;
+  color: var(--ink);
   pointer-events: none;
-  opacity: 0.92;
+  opacity: 0.85;
+}
+
+.cell-fill-ladder {
+  background: var(--ladder) !important;
+  color: #f2faf5;
+}
+
+.cell-fill-ladder .cell-number {
+  color: #e8f5ee;
+  opacity: 0.9;
+}
+
+.cell-fill-snake {
+  background: var(--snake) !important;
+  color: #fff5f3;
+}
+
+.cell-fill-snake .cell-number {
+  color: #ffebe8;
+  opacity: 0.9;
 }
 
 .cell-effect-diceGate {
-  background: color-mix(in srgb, #2c4f78 26%, var(--paper)) !important;
-  color: #17324f;
+  background: #2c4f78 !important;
+  color: #e8f2ff;
 }
 
 .cell-effect-backToStart {
-  background: color-mix(in srgb, var(--snake) 28%, var(--paper)) !important;
+  background: var(--snake) !important;
+  color: #fff5f3;
 }
 
 .cell-effect-extraTurn {
-  background: color-mix(in srgb, var(--ladder) 28%, var(--paper)) !important;
+  background: var(--ladder) !important;
+  color: #f2faf5;
 }
 
 .cell-effect-skipTurn {
-  background: color-mix(in srgb, #8a6a1f 28%, var(--paper)) !important;
+  background: #8a6a1f !important;
+  color: #fff8e8;
 }
 
 .cell-effect-boost {
-  background: color-mix(in srgb, var(--start) 28%, var(--paper)) !important;
+  background: var(--start) !important;
+  color: #eef6fb;
+}
+
+.cell-effect .cell-number {
+  color: inherit;
+  opacity: 0.88;
 }
 
 .cell-palette-target {
@@ -475,30 +514,12 @@ button {
   cursor: pointer;
 }
 
-.cell-start {
+.cell-start:not(.cell-fill-ladder):not(.cell-fill-snake):not(.cell-effect) {
   background: color-mix(in srgb, var(--start) 22%, var(--paper)) !important;
 }
 
-.cell-end {
+.cell-end:not(.cell-fill-ladder):not(.cell-fill-snake):not(.cell-effect) {
   background: color-mix(in srgb, var(--end) 24%, var(--paper)) !important;
-}
-
-.cell-drag-ladder {
-  background: color-mix(in srgb, var(--ladder) 42%, var(--paper)) !important;
-  outline: 2px solid var(--ladder);
-  outline-offset: -2px;
-  z-index: 2;
-}
-
-.cell-drag-snake {
-  background: color-mix(in srgb, var(--snake) 42%, var(--paper)) !important;
-  outline: 2px solid var(--snake);
-  outline-offset: -2px;
-  z-index: 2;
-}
-
-.cell-linked .cell-number {
-  font-weight: 700;
 }
 
 .connector-layer {

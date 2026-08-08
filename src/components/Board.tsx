@@ -57,12 +57,10 @@ export function Board({
   const [paletteHover, setPaletteHover] = useState<number | null>(null)
 
   const effectByCell = new Map(effects.map((e) => [e.cell, e]))
-  const occupied = new Set<number>()
+  const connectorFromByCell = new Map<number, 'ladder' | 'snake'>()
   for (const c of connectors) {
-    occupied.add(c.from)
-    occupied.add(c.to)
+    connectorFromByCell.set(c.from, c.to > c.from ? 'ladder' : 'snake')
   }
-  for (const e of effects) occupied.add(e.cell)
 
   const cells: { n: number; row: number; col: number }[] = []
   for (let row = 0; row < board.rows; row++) {
@@ -189,9 +187,9 @@ export function Board({
         const isEnd = n === board.rows * board.cols
         const isDragSource = dragFrom === n
         const effect = effectByCell.get(n)
-        const hasConnector = occupied.has(n) && !effect
+        const placedTone = connectorFromByCell.get(n)
 
-        let dragTone = ''
+        let dragTone: 'ladder' | 'snake' | null = null
         if (
           isConnectorMode &&
           isDragSource &&
@@ -199,9 +197,10 @@ export function Board({
           hoverCell != null &&
           hoverCell !== dragFrom
         ) {
-          dragTone = hoverCell > dragFrom ? 'cell-drag-ladder' : 'cell-drag-snake'
+          dragTone = hoverCell > dragFrom ? 'ladder' : 'snake'
         }
 
+        const fillTone = dragTone ?? placedTone ?? null
         const isPaletteTarget = paletteHover === n
 
         return (
@@ -211,9 +210,9 @@ export function Board({
               'cell',
               isStart ? 'cell-start' : '',
               isEnd ? 'cell-end' : '',
-              dragTone,
+              fillTone === 'ladder' ? 'cell-fill-ladder' : '',
+              fillTone === 'snake' ? 'cell-fill-snake' : '',
               effect ? `cell-effect cell-effect-${effect.kind}` : '',
-              hasConnector ? 'cell-linked' : '',
               isPaletteTarget ? 'cell-palette-target' : '',
             ]
               .filter(Boolean)
@@ -234,12 +233,17 @@ export function Board({
               }
             }}
           >
-            <span className="cell-number">{n}</span>
             {effect && (
-              <span className="cell-glyph" title={getTool(effect.kind).label}>
-                {getTool(effect.kind).glyph}
+              <span className="cell-fill" title={getTool(effect.kind).label}>
+                <span className="cell-glyph">{getTool(effect.kind).glyph}</span>
               </span>
             )}
+            {fillTone && !effect && (
+              <span className="cell-fill" aria-hidden>
+                <span className="cell-glyph">{fillTone === 'ladder' ? '↑' : '↓'}</span>
+              </span>
+            )}
+            <span className="cell-number">{n}</span>
           </div>
         )
       })}
