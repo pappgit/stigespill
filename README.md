@@ -3,6 +3,8 @@
 Webapp for å designe printbare arkspill:
 
 - **Stigespill** — stiger, slanger og spesialruter
+- **Ludo** — klassisk ludo-brett med egne lagnavn
+- **Monopol** — egendefinert eiendomsbrett
 - **Bilbingo** — reisebingo med egne ruter
 - **Labyrint** — generert labyrint
 - **Finn fem feil** — to bilder med opptil fem forskjeller

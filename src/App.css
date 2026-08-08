@@ -967,3 +967,194 @@ button {
     grid-template-rows: 1fr 1fr;
   }
 }
+
+/* —— Ludo —— */
+.player-field {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.player-swatch {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 4px;
+}
+
+.ludo-board {
+  width: 100%;
+  height: 100%;
+  min-height: 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  padding: 3%;
+  color: var(--ink);
+}
+
+.ludo-title {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(0.95rem, 2.4vw, 1.4rem);
+  letter-spacing: -0.02em;
+}
+
+.ludo-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  grid-template-rows: repeat(15, 1fr);
+  border: 1px solid var(--ink);
+}
+
+.ludo-cell {
+  border-right: 1px solid color-mix(in srgb, var(--paper-line) 80%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--paper-line) 80%, transparent);
+}
+
+.ludo-void {
+  background: color-mix(in srgb, var(--paper) 70%, #ddd);
+}
+
+.ludo-path {
+  background: #fff8f0;
+}
+
+.ludo-center {
+  background: color-mix(in srgb, var(--ink) 12%, var(--paper));
+}
+
+.ludo-safe {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.ludo-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem 0.9rem;
+  font-size: clamp(0.55rem, 1.4vw, 0.78rem);
+  font-weight: 700;
+}
+
+.ludo-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ludo-legend-item i {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* —— Monopol —— */
+.mono-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(11, 1fr);
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+
+.mono-center {
+  grid-column: 2 / 11;
+  grid-row: 2 / 11;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 0.35rem;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(196, 92, 38, 0.12), transparent 45%),
+    color-mix(in srgb, var(--paper) 88%, #fff);
+  border: 1px solid var(--paper-line);
+  margin: 1%;
+  z-index: 0;
+}
+
+.mono-center-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.1rem, 3.5vw, 2.2rem);
+  letter-spacing: -0.03em;
+}
+
+.mono-center-sub {
+  margin: 0;
+  font-size: clamp(0.55rem, 1.4vw, 0.85rem);
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.mono-cell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.1rem;
+  margin: 0;
+  padding: 0.12rem;
+  border: 1px solid var(--ink);
+  background: color-mix(in srgb, var(--paper) 92%, #fff);
+  color: var(--ink);
+  cursor: pointer;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mono-cell.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  z-index: 2;
+}
+
+.mono-cell.corner {
+  background: color-mix(in srgb, var(--ink) 10%, var(--paper));
+  justify-content: center;
+  text-align: center;
+}
+
+.mono-stripe {
+  height: 18%;
+  min-height: 0.25rem;
+  background: var(--mono-color, var(--accent));
+  flex-shrink: 0;
+}
+
+.mono-name {
+  font-size: clamp(0.32rem, 0.95vw, 0.62rem);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  overflow: hidden;
+}
+
+.mono-price {
+  font-size: clamp(0.28rem, 0.8vw, 0.55rem);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  opacity: 0.8;
+}
+
+/* Rotate side labels for readability on left/right edges */
+.mono-cell[style*='grid-column: 1'] .mono-name,
+.mono-cell[style*='grid-column: 11'] .mono-name {
+  writing-mode: horizontal-tb;
+}

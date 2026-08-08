@@ -1,4 +1,10 @@
-export type GameId = 'stigespill' | 'bilbingo' | 'labyrint' | 'femFeil'
+export type GameId =
+  | 'stigespill'
+  | 'bilbingo'
+  | 'labyrint'
+  | 'femFeil'
+  | 'ludo'
+  | 'monopol'
 
 export interface GameDef {
   id: GameId
@@ -13,6 +19,18 @@ export const GAMES: GameDef[] = [
     title: 'Stigespill',
     blurb: 'Lag stiger, slanger og spesialruter på papirformat til trykk.',
     glyph: '⇅',
+  },
+  {
+    id: 'ludo',
+    title: 'Ludo',
+    blurb: 'Klassisk ludo-brett med egne lagnavn og farger til trykk.',
+    glyph: '✦',
+  },
+  {
+    id: 'monopol',
+    title: 'Monopol',
+    blurb: 'Eget eiendomsbrett — rediger gatenavn og priser.',
+    glyph: '⌂',
   },
   {
     id: 'bilbingo',
