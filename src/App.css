@@ -11,8 +11,8 @@
   --start: #3d6b8f;
   --end: #8a6a1f;
   --glow: rgba(26, 46, 40, 0.08);
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'Figtree', sans-serif;
+  --font-display: 'Montserrat', system-ui, sans-serif;
+  --font-body: 'Montserrat', system-ui, sans-serif;
   color: var(--ink);
   font-family: var(--font-body);
   line-height: 1.45;
