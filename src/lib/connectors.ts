@@ -1,4 +1,5 @@
 import { totalCells, type BoardConfig } from './board'
+import type { CellEffect } from './effects'
 
 export type ConnectorKind = 'ladder' | 'snake'
 
@@ -26,6 +27,7 @@ export function validateConnector(
   to: number,
   config: BoardConfig,
   existing: Connector[],
+  effects: CellEffect[] = [],
   excludeId?: string,
 ): ValidationResult {
   const max = totalCells(config)
@@ -46,8 +48,11 @@ export function validateConnector(
     occupied.add(c.from)
     occupied.add(c.to)
   }
+  for (const e of effects) {
+    occupied.add(e.cell)
+  }
   if (occupied.has(from) || occupied.has(to)) {
-    return { ok: false, reason: 'En av rutene har allerede en stige eller slange.' }
+    return { ok: false, reason: 'En av rutene er allerede i bruk.' }
   }
 
   return { ok: true }
@@ -58,8 +63,9 @@ export function upsertConnector(
   from: number,
   to: number,
   config: BoardConfig,
+  effects: CellEffect[] = [],
 ): { connectors: Connector[]; error?: string } {
-  const check = validateConnector(from, to, config, connectors)
+  const check = validateConnector(from, to, config, connectors, effects)
   if (!check.ok) {
     return { connectors, error: check.reason }
   }

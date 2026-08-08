@@ -1,35 +1,68 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { coordToNumber, type BoardConfig } from '../lib/board'
 import type { Connector } from '../lib/connectors'
+import type { CellEffect } from '../lib/effects'
+import { getTool, isEffectTool, TOOL_MIME, type EffectKind, type ToolId } from '../lib/tools'
 import { ConnectorLayer } from './ConnectorLayer'
 
 interface Props {
   board: BoardConfig
   connectors: Connector[]
+  effects: CellEffect[]
+  activeTool: ToolId
   dragFrom: number | null
   onDragStart: (from: number) => void
-  onDrop: (to: number) => void
+  onDropConnector: (from: number, to: number) => void
   onDragCancel: () => void
+  onPlaceEffect: (cell: number, kind: EffectKind) => void
+  onEraseAt: (cell: number) => void
   selectedId: string | null
   onSelectConnector: (id: string | null) => void
+}
+
+function cellFromPoint(
+  boardEl: HTMLElement,
+  clientX: number,
+  clientY: number,
+  cols: number,
+  rows: number,
+): number | null {
+  const rect = boardEl.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) return null
+  const x = (clientX - rect.left) / rect.width
+  const y = (clientY - rect.top) / rect.height
+  if (x < 0 || x >= 1 || y < 0 || y >= 1) return null
+  const col = Math.min(cols - 1, Math.floor(x * cols))
+  const row = Math.min(rows - 1, Math.floor(y * rows))
+  return coordToNumber({ row, col }, { rows, cols })
 }
 
 export function Board({
   board,
   connectors,
+  effects,
+  activeTool,
   dragFrom,
   onDragStart,
-  onDrop,
+  onDropConnector,
   onDragCancel,
+  onPlaceEffect,
+  onEraseAt,
   selectedId,
   onSelectConnector,
 }: Props) {
+  const boardRef = useRef<HTMLDivElement>(null)
+  const drawingFrom = useRef<number | null>(null)
   const [hoverCell, setHoverCell] = useState<number | null>(null)
+  const [paletteHover, setPaletteHover] = useState<number | null>(null)
+
+  const effectByCell = new Map(effects.map((e) => [e.cell, e]))
   const occupied = new Set<number>()
   for (const c of connectors) {
     occupied.add(c.from)
     occupied.add(c.to)
   }
+  for (const e of effects) occupied.add(e.cell)
 
   const cells: { n: number; row: number; col: number }[] = []
   for (let row = 0; row < board.rows; row++) {
@@ -38,21 +71,138 @@ export function Board({
     }
   }
 
+  const isConnectorMode = activeTool === 'connector'
+  const isEraseMode = activeTool === 'erase'
+
+  function finishDraw(clientX: number, clientY: number) {
+    const from = drawingFrom.current
+    drawingFrom.current = null
+    setHoverCell(null)
+
+    if (from == null || !boardRef.current) {
+      onDragCancel()
+      return
+    }
+
+    const to = cellFromPoint(
+      boardRef.current,
+      clientX,
+      clientY,
+      board.cols,
+      board.rows,
+    )
+
+    if (to == null || to === from) {
+      onDragCancel()
+      return
+    }
+
+    onDropConnector(from, to)
+  }
+
+  function applyToolToCell(cell: number, tool: ToolId) {
+    if (tool === 'erase') {
+      onEraseAt(cell)
+      return
+    }
+    if (isEffectTool(tool)) {
+      onPlaceEffect(cell, tool)
+    }
+  }
+
   return (
     <div
-      className="board"
+      ref={boardRef}
+      className={[
+        'board',
+        dragFrom != null ? 'board-drawing' : '',
+        `tool-${activeTool}`,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       style={{
         gridTemplateColumns: `repeat(${board.cols}, 1fr)`,
         gridTemplateRows: `repeat(${board.rows}, 1fr)`,
       }}
-      onClick={() => onSelectConnector(null)}
+      onClick={() => {
+        if (drawingFrom.current == null) onSelectConnector(null)
+      }}
+      onPointerMove={(e) => {
+        if (drawingFrom.current == null || !boardRef.current) return
+        const n = cellFromPoint(
+          boardRef.current,
+          e.clientX,
+          e.clientY,
+          board.cols,
+          board.rows,
+        )
+        setHoverCell(n)
+      }}
+      onPointerUp={(e) => {
+        if (drawingFrom.current == null) return
+        finishDraw(e.clientX, e.clientY)
+      }}
+      onPointerCancel={() => {
+        if (drawingFrom.current == null) return
+        drawingFrom.current = null
+        setHoverCell(null)
+        onDragCancel()
+      }}
+      onDragOver={(e) => {
+        const types = [...e.dataTransfer.types]
+        if (!types.includes(TOOL_MIME) && !types.includes('text/plain')) return
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'copy'
+        if (!boardRef.current) return
+        setPaletteHover(
+          cellFromPoint(
+            boardRef.current,
+            e.clientX,
+            e.clientY,
+            board.cols,
+            board.rows,
+          ),
+        )
+      }}
+      onDragLeave={() => setPaletteHover(null)}
+      onDrop={(e) => {
+        const raw =
+          e.dataTransfer.getData(TOOL_MIME) ||
+          e.dataTransfer.getData('text/plain')
+        if (!raw) return
+        e.preventDefault()
+        setPaletteHover(null)
+        if (!boardRef.current) return
+        const cell = cellFromPoint(
+          boardRef.current,
+          e.clientX,
+          e.clientY,
+          board.cols,
+          board.rows,
+        )
+        if (cell == null) return
+        applyToolToCell(cell, raw as ToolId)
+      }}
     >
       {cells.map(({ n }) => {
         const isStart = n === 1
         const isEnd = n === board.rows * board.cols
         const isDragSource = dragFrom === n
-        const isHover = hoverCell === n && dragFrom != null && dragFrom !== n
-        const hasConnector = occupied.has(n)
+        const effect = effectByCell.get(n)
+        const hasConnector = occupied.has(n) && !effect
+
+        let dragTone = ''
+        if (
+          isConnectorMode &&
+          isDragSource &&
+          dragFrom != null &&
+          hoverCell != null &&
+          hoverCell !== dragFrom
+        ) {
+          dragTone = hoverCell > dragFrom ? 'cell-drag-ladder' : 'cell-drag-snake'
+        }
+
+        const isPaletteTarget = paletteHover === n
 
         return (
           <div
@@ -61,34 +211,35 @@ export function Board({
               'cell',
               isStart ? 'cell-start' : '',
               isEnd ? 'cell-end' : '',
-              isDragSource ? 'cell-drag-source' : '',
-              isHover ? 'cell-drop-target' : '',
+              dragTone,
+              effect ? `cell-effect cell-effect-${effect.kind}` : '',
               hasConnector ? 'cell-linked' : '',
+              isPaletteTarget ? 'cell-palette-target' : '',
             ]
               .filter(Boolean)
               .join(' ')}
-            draggable
-            onDragStart={(e) => {
-              e.dataTransfer.setData('text/plain', String(n))
-              e.dataTransfer.effectAllowed = 'link'
-              onDragStart(n)
-            }}
-            onDragEnd={() => onDragCancel()}
-            onDragOver={(e) => {
-              e.preventDefault()
-              e.dataTransfer.dropEffect = 'link'
-              setHoverCell(n)
-            }}
-            onDragLeave={() => {
-              setHoverCell((h) => (h === n ? null : h))
-            }}
-            onDrop={(e) => {
-              e.preventDefault()
-              setHoverCell(null)
-              onDrop(n)
+            onPointerDown={(e) => {
+              if (e.button !== 0) return
+              if (isConnectorMode) {
+                e.preventDefault()
+                boardRef.current?.setPointerCapture(e.pointerId)
+                drawingFrom.current = n
+                setHoverCell(n)
+                onDragStart(n)
+                return
+              }
+              if (isEraseMode || isEffectTool(activeTool)) {
+                e.preventDefault()
+                applyToolToCell(n, activeTool)
+              }
             }}
           >
             <span className="cell-number">{n}</span>
+            {effect && (
+              <span className="cell-glyph" title={getTool(effect.kind).label}>
+                {getTool(effect.kind).glyph}
+              </span>
+            )}
           </div>
         )
       })}
@@ -96,8 +247,8 @@ export function Board({
       <ConnectorLayer
         board={board}
         connectors={connectors}
-        draftFrom={dragFrom}
-        draftTo={hoverCell}
+        draftFrom={isConnectorMode ? dragFrom : null}
+        draftTo={isConnectorMode ? hoverCell : null}
         selectedId={selectedId}
         onSelect={onSelectConnector}
       />

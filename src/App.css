@@ -137,6 +137,108 @@ button {
   color: #fff8f3;
 }
 
+.tool-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: min(42vh, 380px);
+  overflow: auto;
+}
+
+.tool-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.65rem;
+  align-items: start;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, #e8f0eb 18%, transparent);
+  background: color-mix(in srgb, #e8f0eb 6%, transparent);
+  color: #e8f0eb;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.tool-item:hover {
+  border-color: color-mix(in srgb, #e8f0eb 40%, transparent);
+}
+
+.tool-item.active {
+  border-color: color-mix(in srgb, var(--accent) 80%, #fff);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.tool-item[draggable='true'] {
+  cursor: grab;
+}
+
+.tool-item[draggable='true']:active {
+  cursor: grabbing;
+}
+
+.tool-glyph {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, #e8f0eb 12%, transparent);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tool-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.tool-label {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.tool-desc {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: color-mix(in srgb, #e8f0eb 62%, transparent);
+}
+
+.tool-hint {
+  margin-top: 0.15rem;
+}
+
+.badge.effect-diceGate {
+  background: #2c4f78;
+  color: #e8f2ff;
+}
+
+.badge.effect-backToStart {
+  background: #8a3d2f;
+  color: #ffebe8;
+}
+
+.badge.effect-extraTurn {
+  background: #2f6b4f;
+  color: #e8f5ee;
+}
+
+.badge.effect-skipTurn {
+  background: #6b5a2f;
+  color: #fff6e0;
+}
+
+.badge.effect-boost {
+  background: #3d6b8f;
+  color: #e8f2ff;
+}
+
 .steps {
   margin: 0;
   padding-left: 1.15rem;
@@ -302,15 +404,20 @@ button {
   border-bottom: 1px solid var(--paper-line);
   background: color-mix(in srgb, var(--paper) 92%, #fff);
   transition: background 140ms ease, transform 140ms ease;
-  cursor: grab;
+  cursor: crosshair;
+  touch-action: none;
 }
 
 .cell:nth-child(odd) {
   background: color-mix(in srgb, var(--paper) 88%, #c9d8cf);
 }
 
-.cell:active {
-  cursor: grabbing;
+.board-drawing {
+  cursor: crosshair;
+}
+
+.board-drawing .connector {
+  pointer-events: none;
 }
 
 .cell-number {
@@ -321,6 +428,53 @@ button {
   pointer-events: none;
 }
 
+.cell-glyph {
+  position: absolute;
+  right: 8%;
+  bottom: 6%;
+  font-size: clamp(0.65rem, 1.6vw, 1rem);
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0.92;
+}
+
+.cell-effect-diceGate {
+  background: color-mix(in srgb, #2c4f78 26%, var(--paper)) !important;
+  color: #17324f;
+}
+
+.cell-effect-backToStart {
+  background: color-mix(in srgb, var(--snake) 28%, var(--paper)) !important;
+}
+
+.cell-effect-extraTurn {
+  background: color-mix(in srgb, var(--ladder) 28%, var(--paper)) !important;
+}
+
+.cell-effect-skipTurn {
+  background: color-mix(in srgb, #8a6a1f 28%, var(--paper)) !important;
+}
+
+.cell-effect-boost {
+  background: color-mix(in srgb, var(--start) 28%, var(--paper)) !important;
+}
+
+.cell-palette-target {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+  z-index: 2;
+}
+
+.board.tool-erase .cell,
+.board.tool-diceGate .cell,
+.board.tool-backToStart .cell,
+.board.tool-extraTurn .cell,
+.board.tool-skipTurn .cell,
+.board.tool-boost .cell {
+  cursor: pointer;
+}
+
 .cell-start {
   background: color-mix(in srgb, var(--start) 22%, var(--paper)) !important;
 }
@@ -329,15 +483,18 @@ button {
   background: color-mix(in srgb, var(--end) 24%, var(--paper)) !important;
 }
 
-.cell-drag-source {
-  outline: 2px solid var(--accent);
+.cell-drag-ladder {
+  background: color-mix(in srgb, var(--ladder) 42%, var(--paper)) !important;
+  outline: 2px solid var(--ladder);
   outline-offset: -2px;
   z-index: 2;
 }
 
-.cell-drop-target {
-  background: color-mix(in srgb, var(--accent) 28%, var(--paper)) !important;
-  transform: scale(0.96);
+.cell-drag-snake {
+  background: color-mix(in srgb, var(--snake) 42%, var(--paper)) !important;
+  outline: 2px solid var(--snake);
+  outline-offset: -2px;
+  z-index: 2;
 }
 
 .cell-linked .cell-number {
@@ -379,11 +536,18 @@ button {
 }
 
 .connector.draft {
-  stroke: var(--accent);
   stroke-width: 0.01;
   stroke-dasharray: 0.03 0.02;
-  opacity: 0.85;
+  opacity: 0.9;
   pointer-events: none;
+}
+
+.connector.draft.ladder {
+  stroke: var(--ladder);
+}
+
+.connector.draft.snake {
+  stroke: var(--snake);
 }
 
 @keyframes paper-in {

@@ -10,11 +10,15 @@ export default function App() {
     state,
     setPaper,
     setGrid,
+    setTool,
     dragStart,
     dragCancel,
-    drop,
-    remove,
-    clearConnectors,
+    dropConnector,
+    placeEffect,
+    eraseAt,
+    removeConnector,
+    removeEffect,
+    clearAll,
   } = useBoardEditor()
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -26,16 +30,20 @@ export default function App() {
         paperId={state.paperId}
         board={state.board}
         connectors={state.connectors}
+        effects={state.effects}
+        activeTool={state.activeTool}
         selectedId={selectedId}
         message={state.message}
         onPaperChange={setPaper}
         onGridChange={setGrid}
-        onRemove={(id) => {
-          remove(id)
+        onToolChange={setTool}
+        onRemoveConnector={(id) => {
+          removeConnector(id)
           setSelectedId(null)
         }}
+        onRemoveEffect={removeEffect}
         onClear={() => {
-          clearConnectors()
+          clearAll()
           setSelectedId(null)
         }}
       />
@@ -53,14 +61,18 @@ export default function App() {
             <Board
               board={state.board}
               connectors={state.connectors}
+              effects={state.effects}
+              activeTool={state.activeTool}
               dragFrom={state.dragFrom}
               onDragStart={dragStart}
-              onDrop={drop}
+              onDropConnector={dropConnector}
               onDragCancel={dragCancel}
+              onPlaceEffect={placeEffect}
+              onEraseAt={eraseAt}
               selectedId={selectedId}
               onSelectConnector={(id) => {
                 if (id) {
-                  remove(id)
+                  removeConnector(id)
                   setSelectedId(null)
                 } else {
                   setSelectedId(null)

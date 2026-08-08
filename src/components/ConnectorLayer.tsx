@@ -82,15 +82,24 @@ export function ConnectorLayer({
           />
         )
       })}
-      {draftFrom != null && draftTo != null && (
+      {draftFrom != null && draftTo != null && draftFrom !== draftTo && (
         <path
-          d={snakePath(
-            cellCenter(draftFrom, board).x,
-            cellCenter(draftFrom, board).y,
-            cellCenter(draftTo, board).x,
-            cellCenter(draftTo, board).y,
-          )}
-          className="connector draft"
+          d={
+            draftTo > draftFrom
+              ? ladderPath(
+                  cellCenter(draftFrom, board).x,
+                  cellCenter(draftFrom, board).y,
+                  cellCenter(draftTo, board).x,
+                  cellCenter(draftTo, board).y,
+                )
+              : snakePath(
+                  cellCenter(draftFrom, board).x,
+                  cellCenter(draftFrom, board).y,
+                  cellCenter(draftTo, board).x,
+                  cellCenter(draftTo, board).y,
+                )
+          }
+          className={`connector draft ${draftTo > draftFrom ? 'ladder' : 'snake'}`}
         />
       )}
     </svg>

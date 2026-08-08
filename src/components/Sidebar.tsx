@@ -1,16 +1,22 @@
 import { connectorKind, type Connector } from '../lib/connectors'
+import { effectLabel, type CellEffect } from '../lib/effects'
 import { PAPER_SIZES, type PaperId } from '../lib/paper'
+import { TOOLS, TOOL_MIME, type ToolId } from '../lib/tools'
 import type { BoardConfig } from '../lib/board'
 
 interface Props {
   paperId: PaperId
   board: BoardConfig
   connectors: Connector[]
+  effects: CellEffect[]
+  activeTool: ToolId
   selectedId: string | null
   message: string | null
   onPaperChange: (id: PaperId) => void
   onGridChange: (rows: number, cols: number) => void
-  onRemove: (id: string) => void
+  onToolChange: (tool: ToolId) => void
+  onRemoveConnector: (id: string) => void
+  onRemoveEffect: (id: string) => void
   onClear: () => void
 }
 
@@ -24,14 +30,20 @@ export function Sidebar({
   paperId,
   board,
   connectors,
+  effects,
+  activeTool,
   selectedId,
   message,
   onPaperChange,
   onGridChange,
-  onRemove,
+  onToolChange,
+  onRemoveConnector,
+  onRemoveEffect,
   onClear,
 }: Props) {
   const paper = PAPER_SIZES.find((p) => p.id === paperId)!
+  const active = TOOLS.find((t) => t.id === activeTool)!
+  const hasItems = connectors.length > 0 || effects.length > 0
 
   return (
     <aside className="sidebar">
@@ -41,8 +53,43 @@ export function Sidebar({
       </header>
 
       <section className="panel">
+        <h2>Verktøy</h2>
+        <p className="hint">Velg, eller dra direkte inn på brettet.</p>
+        <ul className="tool-list">
+          {TOOLS.map((tool) => (
+            <li key={tool.id}>
+              <button
+                type="button"
+                className={`tool-item tool-${tool.id}${activeTool === tool.id ? ' active' : ''}`}
+                draggable={tool.id !== 'connector'}
+                onClick={() => onToolChange(tool.id)}
+                onDragStart={(e) => {
+                  if (tool.id === 'connector') {
+                    e.preventDefault()
+                    return
+                  }
+                  e.dataTransfer.setData(TOOL_MIME, tool.id)
+                  e.dataTransfer.setData('text/plain', tool.id)
+                  e.dataTransfer.effectAllowed = 'copy'
+                  onToolChange(tool.id)
+                }}
+              >
+                <span className="tool-glyph" aria-hidden>
+                  {tool.glyph}
+                </span>
+                <span className="tool-copy">
+                  <span className="tool-label">{tool.label}</span>
+                  <span className="tool-desc">{tool.description}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="meta tool-hint">{active.description}</p>
+      </section>
+
+      <section className="panel">
         <h2>Papirstørrelse</h2>
-        <p className="hint">Bestemmer proporsjoner for trykkfilen.</p>
         <div className="chip-row" role="group" aria-label="Papirstørrelse">
           {PAPER_SIZES.map((p) => (
             <button
@@ -81,25 +128,16 @@ export function Sidebar({
       </section>
 
       <section className="panel">
-        <h2>Slik gjør du</h2>
-        <ol className="steps">
-          <li>Dra fra én rute til en annen.</li>
-          <li>Oppover = stige, nedover = slange.</li>
-          <li>Klikk en stige/slange for å slette.</li>
-        </ol>
-      </section>
-
-      <section className="panel">
         <div className="panel-head">
           <h2>På brettet</h2>
-          {connectors.length > 0 && (
+          {hasItems && (
             <button type="button" className="text-btn" onClick={onClear}>
               Tøm
             </button>
           )}
         </div>
-        {connectors.length === 0 ? (
-          <p className="hint">Ingen stiger eller slanger ennå.</p>
+        {!hasItems ? (
+          <p className="hint">Ingen elementer ennå.</p>
         ) : (
           <ul className="connector-list">
             {connectors.map((c) => {
@@ -118,14 +156,28 @@ export function Sidebar({
                   <button
                     type="button"
                     className="text-btn"
-                    onClick={() => onRemove(c.id)}
-                    aria-label={`Fjern ${kind} ${c.from} til ${c.to}`}
+                    onClick={() => onRemoveConnector(c.id)}
                   >
                     Fjern
                   </button>
                 </li>
               )
             })}
+            {effects.map((e) => (
+              <li key={e.id}>
+                <span className={`badge effect-${e.kind}`}>
+                  {effectLabel(e.kind)}
+                </span>
+                <span className="range">Rute {e.cell}</span>
+                <button
+                  type="button"
+                  className="text-btn"
+                  onClick={() => onRemoveEffect(e.id)}
+                >
+                  Fjern
+                </button>
+              </li>
+            ))}
           </ul>
         )}
       </section>
