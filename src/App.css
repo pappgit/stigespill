@@ -1004,34 +1004,36 @@ button {
   min-height: 18rem;
   display: grid;
   place-items: center;
-  border: 2.75px solid var(--ink);
-  background:
-    radial-gradient(ellipse at 50% 45%, #faf4ea 0%, #ebe2d2 58%, #ddd2be 100%);
-  padding: 2.6%;
+  border: 3px solid var(--ink);
+  background: #e8dfcf;
+  padding: 3.2%;
   color: var(--ink);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, #fff 42%, transparent),
-    inset 0 0 0 7px color-mix(in srgb, var(--ink) 8%, transparent),
-    0 1px 0 color-mix(in srgb, #fff 35%, transparent);
+    inset 0 0 0 1px color-mix(in srgb, #fff 48%, transparent),
+    inset 0 0 0 8px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 0 0 10px color-mix(in srgb, #f7f1e6 70%, transparent);
   overflow: hidden;
 }
 
-.ludo-ornaments {
+.ludo-board-wash {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
   pointer-events: none;
   z-index: 0;
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--ludo-red) 32%, transparent), transparent 44%),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--ludo-green) 30%, transparent), transparent 44%),
+    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--ludo-yellow) 32%, transparent), transparent 44%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--ludo-blue) 30%, transparent), transparent 44%),
+    radial-gradient(ellipse at 50% 50%, #faf3e8 0%, transparent 62%);
 }
 
-.ludo-ornament-dot {
-  fill: color-mix(in srgb, var(--ink) 55%, transparent);
-}
-
-.ludo-ornament-diamond {
-  fill: color-mix(in srgb, var(--accent) 70%, var(--ink));
-  opacity: 0.85;
+.ludo-board-wash::before {
+  content: '';
+  position: absolute;
+  inset: 1.1%;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  pointer-events: none;
 }
 
 .ludo-playfield {
@@ -1042,14 +1044,21 @@ button {
   max-width: 100%;
   max-height: 100%;
   aspect-ratio: 1;
-  border: 2px solid var(--ink);
+  border: 2.25px solid var(--ink);
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.4), transparent 38%),
-    #e4dccb;
+    linear-gradient(145deg, rgba(255, 255, 255, 0.45), transparent 36%),
+    repeating-linear-gradient(
+      -18deg,
+      transparent,
+      transparent 6px,
+      rgba(26, 46, 40, 0.015) 6px,
+      rgba(26, 46, 40, 0.015) 7px
+    ),
+    #ddd4c2;
   box-shadow:
-    inset 0 0 0 5px color-mix(in srgb, #f7f1e6 88%, transparent),
-    inset 0 0 0 6.5px color-mix(in srgb, var(--ink) 22%, transparent),
-    0 10px 28px rgba(15, 31, 26, 0.12);
+    inset 0 0 0 4px color-mix(in srgb, #f7f1e6 90%, transparent),
+    inset 0 0 0 5.5px color-mix(in srgb, var(--ink) 28%, transparent),
+    0 12px 32px rgba(15, 31, 26, 0.14);
   overflow: hidden;
 }
 
@@ -1148,7 +1157,7 @@ button {
   width: calc(100% * 6 / 15);
   height: calc(100% * 6 / 15);
   z-index: 2;
-  padding: 3.8%;
+  padding: 1.2%;
   box-sizing: border-box;
 }
 
@@ -1175,58 +1184,70 @@ button {
 .ludo-homebase-frame {
   width: 100%;
   height: 100%;
-  border-radius: 7%;
+  border-radius: 4%;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.34), transparent 40%),
-    radial-gradient(circle at 70% 80%, rgba(0, 0, 0, 0.12), transparent 55%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.38), transparent 38%),
+    radial-gradient(circle at 75% 85%, rgba(0, 0, 0, 0.16), transparent 50%),
     var(--yard);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
-    inset 0 0 0 2.5px color-mix(in srgb, var(--yard) 45%, #000),
-    0 2px 6px rgba(15, 31, 26, 0.14);
-  padding: 8%;
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    inset 0 0 0 3px color-mix(in srgb, var(--yard) 40%, #000),
+    0 3px 8px rgba(15, 31, 26, 0.16);
+  padding: 7.5%;
 }
 
 .ludo-homebase-inner {
   width: 100%;
   height: 100%;
-  border-radius: 6%;
+  border-radius: 3.5%;
   background:
-    radial-gradient(ellipse at 28% 18%, #fffdf9 0%, #f4ece1 68%),
-    #f1e8db;
-  border: 1.75px solid color-mix(in srgb, var(--yard) 70%, var(--ink));
+    radial-gradient(ellipse at 28% 16%, #fffef9 0%, #f3ebe0 70%),
+    #efe6d8;
+  border: 2px solid color-mix(in srgb, var(--yard) 75%, var(--ink));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7%;
-  padding: 8% 9% 9%;
+  gap: 8%;
+  padding: 8% 8% 9%;
   box-shadow:
-    inset 0 0 0 4px color-mix(in srgb, var(--yard) 16%, transparent),
-    inset 0 -8px 16px rgba(26, 46, 40, 0.04);
+    inset 0 0 0 5px color-mix(in srgb, var(--yard) 14%, transparent),
+    inset 0 -10px 18px rgba(26, 46, 40, 0.05);
+}
+
+.ludo-homebase-banner {
+  width: 86%;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--yard) 88%, #fff), var(--yard));
+  color: #fff8f0;
+  border-radius: 999px;
+  padding: 0.28em 0.7em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .ludo-homebase-name {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(0.5rem, 1.5vw, 1.05rem);
-  letter-spacing: 0.08em;
+  font-size: clamp(0.48rem, 1.4vw, 0.95rem);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--yard) 72%, var(--ink));
-  line-height: 1;
+  line-height: 1.1;
   text-align: center;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .ludo-pads {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16%;
-  width: 64%;
+  gap: 15%;
+  width: 66%;
   aspect-ratio: 1;
 }
 
@@ -1234,23 +1255,27 @@ button {
   position: relative;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--yard) 22%, #fff8f0), color-mix(in srgb, var(--yard) 38%, #efe4d4));
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in srgb, var(--yard) 18%, #fff8f0),
+      color-mix(in srgb, var(--yard) 36%, #ebe0d0)
+    );
   box-shadow:
-    inset 0 0 0 2px color-mix(in srgb, var(--yard) 60%, var(--ink)),
-    inset 0 3px 5px rgba(0, 0, 0, 0.1),
-    0 1px 0 rgba(255, 255, 255, 0.45);
+    inset 0 0 0 2px color-mix(in srgb, var(--yard) 62%, var(--ink)),
+    inset 0 3px 6px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .ludo-pad-core {
   position: absolute;
-  inset: 18%;
+  inset: 17%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.55), transparent 52%),
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.62), transparent 52%),
     var(--yard);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
-    0 1px 2px rgba(0, 0, 0, 0.15);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .ludo-center-hub {
@@ -1258,7 +1283,7 @@ button {
   inset: calc(100% * 6 / 15);
   z-index: 3;
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(15, 31, 26, 0.2));
+  filter: drop-shadow(0 2px 5px rgba(15, 31, 26, 0.22));
 }
 
 .ludo-center-svg {
@@ -1268,55 +1293,60 @@ button {
 }
 
 .ludo-center-wedge {
-  stroke: color-mix(in srgb, var(--ink) 55%, transparent);
-  stroke-width: 0.35;
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 0.5;
 }
 
 .ludo-center-seam {
-  stroke: color-mix(in srgb, var(--ink) 42%, transparent);
+  stroke: color-mix(in srgb, var(--ink) 50%, transparent);
+  stroke-width: 0.65;
+}
+
+.ludo-center-ring-outer {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.35;
+}
+
+.ludo-center-ring-inner {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 28%, transparent);
   stroke-width: 0.55;
 }
 
-.ludo-center-ring {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 1.1;
-}
-
 .ludo-center-disc {
-  fill: #f7f1e6;
-  stroke: color-mix(in srgb, var(--ink) 35%, transparent);
-  stroke-width: 0.6;
+  fill: #f8f2e7;
 }
 
 .ludo-center-copy {
   position: absolute;
-  inset: 0;
+  inset: 29%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.12rem;
-  padding: 28%;
+  gap: 0.08rem;
   text-align: center;
   color: var(--ink);
+  overflow: hidden;
 }
 
 .ludo-center-kicker {
   margin: 0;
-  font-size: clamp(0.32rem, 0.85vw, 0.55rem);
+  font-size: clamp(0.28rem, 0.75vw, 0.5rem);
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.62;
+  opacity: 0.58;
+  line-height: 1;
 }
 
 .ludo-center-title {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(0.7rem, 2.2vw, 1.55rem);
-  letter-spacing: 0.06em;
+  font-size: clamp(0.62rem, 1.9vw, 1.35rem);
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   line-height: 0.95;
   max-width: 100%;
@@ -1326,16 +1356,17 @@ button {
 }
 
 .ludo-center-sub {
-  margin: 0.1rem 0 0;
-  font-size: clamp(0.34rem, 0.95vw, 0.62rem);
+  margin: 0.08rem 0 0;
+  font-size: clamp(0.3rem, 0.8vw, 0.52rem);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.72;
+  opacity: 0.68;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1;
 }
 
 /* —— Monopol —— */

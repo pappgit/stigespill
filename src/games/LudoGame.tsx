@@ -39,42 +39,6 @@ function StarGlyph() {
   )
 }
 
-function BoardOrnaments() {
-  return (
-    <svg className="ludo-ornaments" viewBox="0 0 100 100" aria-hidden>
-      <defs>
-        <pattern
-          id="ludo-linen"
-          width="4"
-          height="4"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M0 4L4 0M-1 1L1 -1M3 5L5 3"
-            stroke="rgba(26,46,40,0.04)"
-            strokeWidth="0.4"
-          />
-        </pattern>
-      </defs>
-      <rect width="100" height="100" fill="url(#ludo-linen)" />
-      {[
-        [3.2, 3.2],
-        [96.8, 3.2],
-        [3.2, 96.8],
-        [96.8, 96.8],
-      ].map(([x, y]) => (
-        <g key={`${x}-${y}`} transform={`translate(${x} ${y})`}>
-          <circle r="1.35" className="ludo-ornament-dot" />
-          <path
-            d="M0-2.6L0.55-0.55 2.6 0 0.55 0.55 0 2.6 -0.55 0.55 -2.6 0 -0.55-0.55Z"
-            className="ludo-ornament-diamond"
-          />
-        </g>
-      ))}
-    </svg>
-  )
-}
-
 function CenterHub({
   players,
   title,
@@ -88,10 +52,10 @@ function CenterHub({
     players.find((p) => p.id === id)?.color ?? '#888'
 
   const wedges: Array<{ player: LudoPlayer['id']; points: string }> = [
-    { player: 'green', points: '50,50 2,2 98,2' },
-    { player: 'blue', points: '50,50 98,2 98,98' },
-    { player: 'yellow', points: '50,50 98,98 2,98' },
-    { player: 'red', points: '50,50 2,98 2,2' },
+    { player: 'green', points: '50,50 0,0 100,0' },
+    { player: 'blue', points: '50,50 100,0 100,100' },
+    { player: 'yellow', points: '50,50 100,100 0,100' },
+    { player: 'red', points: '50,50 0,100 0,0' },
   ]
 
   return (
@@ -105,16 +69,17 @@ function CenterHub({
             className="ludo-center-wedge"
           />
         ))}
-        <line x1="50" y1="50" x2="2" y2="2" className="ludo-center-seam" />
-        <line x1="50" y1="50" x2="98" y2="2" className="ludo-center-seam" />
-        <line x1="50" y1="50" x2="98" y2="98" className="ludo-center-seam" />
-        <line x1="50" y1="50" x2="2" y2="98" className="ludo-center-seam" />
-        <circle cx="50" cy="50" r="18.5" className="ludo-center-ring" />
-        <circle cx="50" cy="50" r="16.2" className="ludo-center-disc" />
+        <line x1="50" y1="50" x2="0" y2="0" className="ludo-center-seam" />
+        <line x1="50" y1="50" x2="100" y2="0" className="ludo-center-seam" />
+        <line x1="50" y1="50" x2="100" y2="100" className="ludo-center-seam" />
+        <line x1="50" y1="50" x2="0" y2="100" className="ludo-center-seam" />
+        <circle cx="50" cy="50" r="22" className="ludo-center-ring-outer" />
+        <circle cx="50" cy="50" r="20.2" className="ludo-center-disc" />
+        <circle cx="50" cy="50" r="18.4" className="ludo-center-ring-inner" />
       </svg>
       <div className="ludo-center-copy">
         <p className="ludo-center-kicker">Pappgit</p>
-        <p className="ludo-center-title">{title}</p>
+        <p className="ludo-center-title">{title || 'Ludo'}</p>
         {subtitle.trim() ? (
           <p className="ludo-center-sub">{subtitle}</p>
         ) : null}
@@ -212,8 +177,18 @@ export function LudoGame({ onBack }: Props) {
       </GameShell>
 
       <PaperStage paperId={paperId}>
-        <div className="ludo-board">
-          <BoardOrnaments />
+        <div
+          className="ludo-board"
+          style={
+            {
+              ['--ludo-red' as string]: colorFor('red'),
+              ['--ludo-green' as string]: colorFor('green'),
+              ['--ludo-yellow' as string]: colorFor('yellow'),
+              ['--ludo-blue' as string]: colorFor('blue'),
+            } as CSSProperties
+          }
+        >
+          <div className="ludo-board-wash" aria-hidden />
 
           <div className="ludo-playfield">
             <div className="ludo-grid">
@@ -230,7 +205,8 @@ export function LudoGame({ onBack }: Props) {
 
                   const tone = cell.player ? colorFor(cell.player) : undefined
                   const isStretch = cell.kind === 'home-stretch'
-                  const isStart = cell.kind === 'safe' && !!cell.arrow && !cell.star
+                  const isStart =
+                    cell.kind === 'safe' && !!cell.arrow && !cell.star
                   const style =
                     (isStretch || isStart) && tone
                       ? ({
@@ -248,7 +224,9 @@ export function LudoGame({ onBack }: Props) {
                         cell.arrow ? 'ludo-has-arrow' : '',
                         isStart ? 'ludo-start' : '',
                         isStretch ? 'ludo-stretch' : '',
-                        isStretch && cell.stretchStep === 5 ? 'ludo-stretch-end' : '',
+                        isStretch && cell.stretchStep === 5
+                          ? 'ludo-stretch-end'
+                          : '',
                       ]
                         .filter(Boolean)
                         .join(' ')}
@@ -277,7 +255,9 @@ export function LudoGame({ onBack }: Props) {
                 >
                   <div className="ludo-homebase-frame">
                     <div className="ludo-homebase-inner">
-                      <p className="ludo-homebase-name">{player.name}</p>
+                      <div className="ludo-homebase-banner">
+                        <p className="ludo-homebase-name">{player.name}</p>
+                      </div>
                       <div className="ludo-pads" aria-hidden>
                         {Array.from({ length: 4 }, (_, i) => (
                           <span key={i} className="ludo-pad">
