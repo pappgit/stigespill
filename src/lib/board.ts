@@ -52,20 +52,25 @@ export function cellCenter(n: number, config: BoardConfig): { x: number; y: numb
 }
 
 /**
- * Point slightly inset from cell center toward another cell,
- * so connector strokes clear the glyph in the filled start cell.
+ * Point near the edge of a cell, in the direction of another cell.
+ * `pad` is how far from center as a fraction of cell size (0.45 ≈ near edge).
  */
 export function cellEdgeToward(
   from: number,
   to: number,
   config: BoardConfig,
-  inset = 0.32,
+  pad = 0.45,
 ): { x: number; y: number } {
   const a = cellCenter(from, config)
   const b = cellCenter(to, config)
+  const dx = b.x - a.x
+  const dy = b.y - a.y
+  const len = Math.hypot(dx, dy) || 1
+  const cellSize = Math.min(1 / config.cols, 1 / config.rows)
+  const dist = cellSize * pad
   return {
-    x: a.x + (b.x - a.x) * inset,
-    y: a.y + (b.y - a.y) * inset,
+    x: a.x + (dx / len) * dist,
+    y: a.y + (dy / len) * dist,
   }
 }
 

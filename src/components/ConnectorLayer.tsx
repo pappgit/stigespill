@@ -1,4 +1,4 @@
-import { cellEdgeToward, type BoardConfig } from '../lib/board'
+import { cellCenter, cellEdgeToward, type BoardConfig } from '../lib/board'
 import { connectorKind, type Connector } from '../lib/connectors'
 
 interface Props {
@@ -34,7 +34,7 @@ function snakePath(x1: number, y1: number, x2: number, y2: number): string {
   const len = Math.hypot(dx, dy) || 1
   const nx = -dy / len
   const ny = dx / len
-  const amp = Math.min(0.04, len * 0.12)
+  const amp = Math.min(0.035, len * 0.1)
   const mid1x = x1 + dx * 0.33 + nx * amp
   const mid1y = y1 + dy * 0.33 + ny * amp
   const mid2x = x1 + dx * 0.66 - nx * amp
@@ -42,11 +42,12 @@ function snakePath(x1: number, y1: number, x2: number, y2: number): string {
   return `M ${x1} ${y1} C ${mid1x} ${mid1y}, ${mid2x} ${mid2y}, ${x2} ${y2}`
 }
 
+/** Start near the edge of the filled cell; end at the target centre. */
 function endpoints(from: number, to: number, board: BoardConfig) {
-  // Keep clear of the arrow glyph in the filled start cell.
-  const a = cellEdgeToward(from, to, board, 0.42)
-  const b = cellEdgeToward(to, from, board, 0.22)
-  return { a, b }
+  return {
+    a: cellEdgeToward(from, to, board, 0.48),
+    b: cellCenter(to, board),
+  }
 }
 
 export function ConnectorLayer({
