@@ -506,6 +506,7 @@ button {
 .cell-fill-ladder {
   background: var(--ladder) !important;
   color: #f2faf5;
+  z-index: 4;
 }
 
 .cell-fill-ladder .cell-number {
@@ -516,6 +517,7 @@ button {
 .cell-fill-snake {
   background: var(--snake) !important;
   color: #fff5f3;
+  z-index: 4;
 }
 
 .cell-fill-snake .cell-number {
@@ -526,26 +528,31 @@ button {
 .cell-effect-diceGate {
   background: #2c4f78 !important;
   color: #e8f2ff;
+  z-index: 4;
 }
 
 .cell-effect-backToStart {
   background: var(--snake) !important;
   color: #fff5f3;
+  z-index: 4;
 }
 
 .cell-effect-extraTurn {
   background: var(--ladder) !important;
   color: #f2faf5;
+  z-index: 4;
 }
 
 .cell-effect-skipTurn {
   background: #8a6a1f !important;
   color: #fff8e8;
+  z-index: 4;
 }
 
 .cell-effect-boost {
   background: var(--start) !important;
   color: #eef6fb;
+  z-index: 4;
 }
 
 .cell-effect .cell-number {
@@ -557,7 +564,7 @@ button {
   background: color-mix(in srgb, var(--accent) 38%, var(--paper)) !important;
   outline: 2px solid var(--accent);
   outline-offset: -2px;
-  z-index: 2;
+  z-index: 4;
   animation: arm-pulse 1.1s ease-in-out infinite;
 }
 

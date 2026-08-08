@@ -51,4 +51,22 @@ export function cellCenter(n: number, config: BoardConfig): { x: number; y: numb
   }
 }
 
+/**
+ * Point slightly inset from cell center toward another cell,
+ * so connector strokes clear the glyph in the filled start cell.
+ */
+export function cellEdgeToward(
+  from: number,
+  to: number,
+  config: BoardConfig,
+  inset = 0.32,
+): { x: number; y: number } {
+  const a = cellCenter(from, config)
+  const b = cellCenter(to, config)
+  return {
+    x: a.x + (b.x - a.x) * inset,
+    y: a.y + (b.y - a.y) * inset,
+  }
+}
+
 export const DEFAULT_BOARD: BoardConfig = { rows: 10, cols: 10 }

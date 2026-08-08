@@ -1,4 +1,4 @@
-import { cellCenter, type BoardConfig } from '../lib/board'
+import { cellEdgeToward, type BoardConfig } from '../lib/board'
 import { connectorKind, type Connector } from '../lib/connectors'
 
 interface Props {
@@ -42,6 +42,13 @@ function snakePath(x1: number, y1: number, x2: number, y2: number): string {
   return `M ${x1} ${y1} C ${mid1x} ${mid1y}, ${mid2x} ${mid2y}, ${x2} ${y2}`
 }
 
+function endpoints(from: number, to: number, board: BoardConfig) {
+  // Keep clear of the arrow glyph in the filled start cell.
+  const a = cellEdgeToward(from, to, board, 0.42)
+  const b = cellEdgeToward(to, from, board, 0.22)
+  return { a, b }
+}
+
 export function ConnectorLayer({
   board,
   connectors,
@@ -53,8 +60,7 @@ export function ConnectorLayer({
   return (
     <svg className="connector-layer" viewBox="0 0 1 1" preserveAspectRatio="none">
       {connectors.map((c) => {
-        const a = cellCenter(c.from, board)
-        const b = cellCenter(c.to, board)
+        const { a, b } = endpoints(c.from, c.to, board)
         const kind = connectorKind(c)
         const selected = selectedId === c.id
         if (kind === 'ladder') {
@@ -84,21 +90,12 @@ export function ConnectorLayer({
       })}
       {draftFrom != null && draftTo != null && draftFrom !== draftTo && (
         <path
-          d={
-            draftTo > draftFrom
-              ? ladderPath(
-                  cellCenter(draftFrom, board).x,
-                  cellCenter(draftFrom, board).y,
-                  cellCenter(draftTo, board).x,
-                  cellCenter(draftTo, board).y,
-                )
-              : snakePath(
-                  cellCenter(draftFrom, board).x,
-                  cellCenter(draftFrom, board).y,
-                  cellCenter(draftTo, board).x,
-                  cellCenter(draftTo, board).y,
-                )
-          }
+          d={(() => {
+            const { a, b } = endpoints(draftFrom, draftTo, board)
+            return draftTo > draftFrom
+              ? ladderPath(a.x, a.y, b.x, b.y)
+              : snakePath(a.x, a.y, b.x, b.y)
+          })()}
           className={`connector draft ${draftTo > draftFrom ? 'ladder' : 'snake'}`}
         />
       )}
