@@ -53,26 +53,19 @@ export function defaultMonopolBoard(): MonoSpace[] {
 }
 
 /**
- * Map board index 0..39 to CSS grid row/col on an 11×11 board
- * (corners at (10,10), (10,0), (0,0), (0,10) — bottom-left is GO).
+ * Map board index 0..39 to CSS grid row/col on an 11×11 board.
+ * GO at bottom-left, then clockwise: bottom → right → top → left.
  */
 export function monopolCellPosition(index: number): { row: number; col: number } {
   if (index < 0 || index > 39) throw new Error('Bad monopol index')
-  if (index <= 10) return { row: 10, col: 10 - index } // bottom edge, L→R from GO? Wait
-  // Standard visual: GO bottom-right, going counterclockwise (classic Monopoly clockwise from GO bottom-right looking at board... actually GO is usually bottom-left or bottom-right depending on print).
-  // Use: GO at bottom-left (row 10, col 0), then along bottom to the right, up the right side, left along top, down the left side.
   if (index <= 10) {
-    // 0 = bottom-left GO ... 10 = bottom-right jail
     return { row: 10, col: index }
   }
   if (index <= 20) {
-    // 11..20 up the right side (excluding bottom corner)
     return { row: 10 - (index - 10), col: 10 }
   }
   if (index <= 30) {
-    // 21..30 left along top
     return { row: 0, col: 10 - (index - 20) }
   }
-  // 31..39 down left side (excluding corners)
   return { row: index - 30, col: 0 }
 }

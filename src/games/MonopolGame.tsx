@@ -1,5 +1,11 @@
 import { useState } from 'react'
 import { GameShell } from '../components/GameShell'
+import {
+  iconGroupFor,
+  isPropertyGroup,
+  MonoIcon,
+  monopolEdge,
+} from '../components/MonoIcons'
 import { PaperStage } from '../components/PaperStage'
 import {
   defaultMonopolBoard,
@@ -15,7 +21,8 @@ interface Props {
 export function MonopolGame({ onBack }: Props) {
   const [paperId, setPaperId] = useState<PaperId>('A3')
   const [spaces, setSpaces] = useState<MonoSpace[]>(() => defaultMonopolBoard())
-  const [title, setTitle] = useState('Monopol')
+  const [title, setTitle] = useState('OSLO')
+  const [subtitle, setSubtitle] = useState('Eiendomsbrett')
   const [selected, setSelected] = useState<number | null>(null)
 
   function updateSpace(index: number, patch: Partial<MonoSpace>) {
@@ -35,11 +42,18 @@ export function MonopolGame({ onBack }: Props) {
         onBack={onBack}
       >
         <section className="panel">
-          <h2>Tittel</h2>
+          <h2>Brett</h2>
           <input
             className="field-input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="Tittel i midten"
+          />
+          <input
+            className="field-input"
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+            placeholder="Undertittel"
           />
           <p className="hint">Eget eiendomsbrett — ikke et offisielt Monopoly-produkt.</p>
         </section>
@@ -50,6 +64,7 @@ export function MonopolGame({ onBack }: Props) {
             <p className="hint">Trykk en rute på brettet for å redigere.</p>
           ) : (
             <>
+              <p className="meta">Rute {selected! + 1} · {selectedSpace.group}</p>
               <input
                 className="field-input"
                 value={selectedSpace.name}
@@ -71,6 +86,8 @@ export function MonopolGame({ onBack }: Props) {
             onClick={() => {
               setSpaces(defaultMonopolBoard())
               setSelected(null)
+              setTitle('OSLO')
+              setSubtitle('Eiendomsbrett')
             }}
           >
             Tilbakestill Oslo-tema
@@ -81,17 +98,40 @@ export function MonopolGame({ onBack }: Props) {
       <PaperStage paperId={paperId}>
         <div className="mono-board">
           <div className="mono-center">
-            <p className="mono-center-title">{title}</p>
-            <p className="mono-center-sub">Egendefinert eiendomsbrett</p>
+            <img
+              className="mono-center-art"
+              src={`${import.meta.env.BASE_URL}monopol-center.jpg`}
+              alt=""
+            />
+            <div className="mono-center-veil" aria-hidden />
+            <div className="mono-center-copy">
+              <p className="mono-center-kicker">Pappgit</p>
+              <p className="mono-center-title">{title}</p>
+              <p className="mono-center-sub">{subtitle}</p>
+            </div>
           </div>
+
           {spaces.map((space, index) => {
             const { row, col } = monopolCellPosition(index)
+            const edge = monopolEdge(index)
             const isCorner = space.group === 'corner'
+            const icon = iconGroupFor(space)
+            const property = isPropertyGroup(space.group)
+
             return (
               <button
                 key={space.id}
                 type="button"
-                className={`mono-cell${selected === index ? ' selected' : ''}${isCorner ? ' corner' : ''}`}
+                className={[
+                  'mono-cell',
+                  `mono-edge-${edge}`,
+                  isCorner ? 'corner' : '',
+                  property ? 'property' : 'special',
+                  `g-${space.group}`,
+                  selected === index ? 'selected' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 style={{
                   gridRow: row + 1,
                   gridColumn: col + 1,
@@ -99,13 +139,18 @@ export function MonopolGame({ onBack }: Props) {
                 }}
                 onClick={() => setSelected(index)}
               >
-                {!isCorner && space.group !== 'chance' && space.group !== 'tax' && space.group !== 'rail' && space.group !== 'util' && (
-                  <span className="mono-stripe" />
-                )}
-                <span className="mono-name">{space.name}</span>
-                {space.price ? (
-                  <span className="mono-price">{space.price}</span>
-                ) : null}
+                <span className="mono-cell-inner">
+                  {property && <span className="mono-stripe" />}
+                  {icon && (
+                    <span className="mono-icon-wrap">
+                      <MonoIcon group={icon} className="mono-icon" />
+                    </span>
+                  )}
+                  <span className="mono-name">{space.name}</span>
+                  {space.price ? (
+                    <span className="mono-price">{space.price}</span>
+                  ) : null}
+                </span>
               </button>
             )
           })}

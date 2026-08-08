@@ -1062,56 +1062,107 @@ button {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 16rem;
+  min-height: 18rem;
   display: grid;
   grid-template-columns: repeat(11, 1fr);
   grid-template-rows: repeat(11, 1fr);
-  border: 1.5px solid var(--ink);
-  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  background:
+    radial-gradient(ellipse at center, #ebe4d4 0%, #d9d0be 100%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, #fff 35%, transparent),
+    0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+  overflow: hidden;
 }
 
 .mono-center {
   grid-column: 2 / 11;
   grid-row: 2 / 11;
-  display: grid;
-  place-content: center;
-  text-align: center;
-  gap: 0.35rem;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(196, 92, 38, 0.12), transparent 45%),
-    color-mix(in srgb, var(--paper) 88%, #fff);
-  border: 1px solid var(--paper-line);
-  margin: 1%;
+  position: relative;
   z-index: 0;
+  margin: 1.2%;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 55%, transparent);
+  overflow: hidden;
+  background: #1a2e28;
+  box-shadow:
+    inset 0 0 0 6px color-mix(in srgb, var(--paper) 55%, transparent),
+    0 8px 24px rgba(15, 31, 26, 0.18);
+}
+
+.mono-center-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
+  transform: scale(1.02);
+}
+
+.mono-center-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15, 31, 26, 0.15) 0%,
+      rgba(15, 31, 26, 0.35) 45%,
+      rgba(15, 31, 26, 0.72) 100%
+    );
+  pointer-events: none;
+}
+
+.mono-center-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.2rem;
+  padding: 8% 6% 10%;
+  text-align: center;
+  color: #f3efe6;
+  z-index: 1;
+}
+
+.mono-center-kicker {
+  margin: 0;
+  font-size: clamp(0.45rem, 1.1vw, 0.7rem);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .mono-center-title {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.1rem, 3.5vw, 2.2rem);
-  letter-spacing: -0.03em;
+  font-size: clamp(1.4rem, 5vw, 3.2rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 0.95;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
 }
 
 .mono-center-sub {
-  margin: 0;
-  font-size: clamp(0.55rem, 1.4vw, 0.85rem);
-  color: var(--ink-muted);
+  margin: 0.15rem 0 0;
+  font-size: clamp(0.55rem, 1.4vw, 0.9rem);
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.88;
 }
 
 .mono-cell {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 0.1rem;
+  display: block;
   margin: 0;
-  padding: 0.12rem;
-  border: 1px solid var(--ink);
-  background: color-mix(in srgb, var(--paper) 92%, #fff);
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--ink) 75%, transparent);
+  background: #f7f1e6;
   color: var(--ink);
   cursor: pointer;
   min-width: 0;
@@ -1119,42 +1170,147 @@ button {
   overflow: hidden;
 }
 
+.mono-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.28), transparent 42%);
+  pointer-events: none;
+}
+
 .mono-cell.selected {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
-  z-index: 2;
+  z-index: 3;
 }
 
-.mono-cell.corner {
-  background: color-mix(in srgb, var(--ink) 10%, var(--paper));
+.mono-cell-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  text-align: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.2rem 0.15rem;
+  gap: 0.1rem;
+  box-sizing: border-box;
 }
 
 .mono-stripe {
-  height: 18%;
-  min-height: 0.25rem;
+  position: absolute;
   background: var(--mono-color, var(--accent));
-  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+
+/* Color bar toward board center */
+.mono-edge-bottom.property .mono-stripe {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22%;
+}
+
+.mono-edge-top.property .mono-stripe {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+}
+
+.mono-edge-left.property .mono-stripe {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 22%;
+}
+
+.mono-edge-right.property .mono-stripe {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 22%;
+}
+
+.mono-edge-bottom.property .mono-cell-inner {
+  padding-top: 24%;
+}
+
+.mono-edge-top.property .mono-cell-inner {
+  padding-bottom: 24%;
+}
+
+.mono-edge-left.property .mono-cell-inner {
+  padding-right: 24%;
+}
+
+.mono-edge-right.property .mono-cell-inner {
+  padding-left: 24%;
+}
+
+.mono-icon-wrap {
+  display: grid;
+  place-items: center;
+  color: var(--mono-color, var(--ink));
+  opacity: 0.92;
+}
+
+.mono-icon {
+  width: clamp(0.7rem, 2.2vw, 1.45rem);
+  height: clamp(0.7rem, 2.2vw, 1.45rem);
 }
 
 .mono-name {
-  font-size: clamp(0.32rem, 0.95vw, 0.62rem);
+  font-size: clamp(0.28rem, 0.85vw, 0.58rem);
   font-weight: 700;
   line-height: 1.1;
   text-align: center;
+  letter-spacing: 0.01em;
+  max-width: 100%;
   overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .mono-price {
-  font-size: clamp(0.28rem, 0.8vw, 0.55rem);
+  font-size: clamp(0.26rem, 0.75vw, 0.52rem);
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
   text-align: center;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
-/* Rotate side labels for readability on left/right edges */
-.mono-cell[style*='grid-column: 1'] .mono-name,
-.mono-cell[style*='grid-column: 11'] .mono-name {
-  writing-mode: horizontal-tb;
+.mono-cell.corner {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.35), transparent 40%),
+    color-mix(in srgb, var(--ink) 10%, #f7f1e6);
+}
+
+.mono-cell.corner .mono-cell-inner {
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 8%;
+}
+
+.mono-cell.corner .mono-name {
+  font-size: clamp(0.35rem, 1vw, 0.7rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  -webkit-line-clamp: 2;
+}
+
+.mono-cell.corner .mono-icon {
+  width: clamp(1.1rem, 3.2vw, 2.2rem);
+  height: clamp(1.1rem, 3.2vw, 2.2rem);
+  color: var(--ink);
+}
+
+.mono-cell.special:not(.corner) {
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.3), transparent 45%),
+    color-mix(in srgb, var(--mono-color) 14%, #f7f1e6);
 }
