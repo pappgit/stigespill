@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { coordToNumber, type BoardConfig } from '../lib/board'
 import type { Connector } from '../lib/connectors'
 import type { CellEffect } from '../lib/effects'
-import { getTool, isEffectTool, TOOL_MIME, type EffectKind, type ToolId } from '../lib/tools'
+import { getTool, isEffectTool, type EffectKind, type ToolId } from '../lib/tools'
 import { ConnectorLayer } from './ConnectorLayer'
 
 interface Props {
@@ -19,6 +19,8 @@ interface Props {
   selectedId: string | null
   onSelectConnector: (id: string | null) => void
 }
+
+const DOUBLE_TAP_MS = 450
 
 function cellFromPoint(
   boardEl: HTMLElement,
@@ -37,6 +39,10 @@ function cellFromPoint(
   return coordToNumber({ row, col }, { rows, cols })
 }
 
+function isTouchLike(pointerType: string): boolean {
+  return pointerType === 'touch' || pointerType === 'pen'
+}
+
 export function Board({
   board,
   connectors,
@@ -53,8 +59,11 @@ export function Board({
 }: Props) {
   const boardRef = useRef<HTMLDivElement>(null)
   const drawingFrom = useRef<number | null>(null)
+  const armedFrom = useRef<number | null>(null)
+  const lastTap = useRef<{ cell: number; at: number } | null>(null)
   const [hoverCell, setHoverCell] = useState<number | null>(null)
-  const [paletteHover, setPaletteHover] = useState<number | null>(null)
+  const [armedCell, setArmedCell] = useState<number | null>(null)
+  const [hint, setHint] = useState<string | null>(null)
 
   const effectByCell = new Map(effects.map((e) => [e.cell, e]))
   const connectorFromByCell = new Map<number, 'ladder' | 'snake'>()
@@ -72,6 +81,18 @@ export function Board({
   const isConnectorMode = activeTool === 'connector'
   const isEraseMode = activeTool === 'erase'
 
+  function clearArm() {
+    armedFrom.current = null
+    setArmedCell(null)
+  }
+
+  function armCell(n: number) {
+    armedFrom.current = n
+    setArmedCell(n)
+    onDragStart(n)
+    setHint('Start valgt — dra eller trykk på målruten')
+  }
+
   function finishDraw(clientX: number, clientY: number) {
     const from = drawingFrom.current
     drawingFrom.current = null
@@ -79,6 +100,8 @@ export function Board({
 
     if (from == null || !boardRef.current) {
       onDragCancel()
+      clearArm()
+      setHint(null)
       return
     }
 
@@ -91,11 +114,28 @@ export function Board({
     )
 
     if (to == null || to === from) {
-      onDragCancel()
+      // Keep arm on touch so user can try again
+      if (armedFrom.current != null) {
+        onDragStart(armedFrom.current)
+        setHint('Prøv igjen — dra eller trykk på en annen rute')
+      } else {
+        onDragCancel()
+        setHint(null)
+      }
       return
     }
 
     onDropConnector(from, to)
+    clearArm()
+    setHint(null)
+    lastTap.current = null
+  }
+
+  function beginDraw(from: number, pointerId: number, hover: number) {
+    boardRef.current?.setPointerCapture(pointerId)
+    drawingFrom.current = from
+    setHoverCell(hover)
+    onDragStart(from)
   }
 
   function applyToolToCell(cell: number, tool: ToolId) {
@@ -108,154 +148,176 @@ export function Board({
     }
   }
 
-  return (
-    <div
-      ref={boardRef}
-      className={[
-        'board',
-        dragFrom != null ? 'board-drawing' : '',
-        `tool-${activeTool}`,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      style={{
-        gridTemplateColumns: `repeat(${board.cols}, 1fr)`,
-        gridTemplateRows: `repeat(${board.rows}, 1fr)`,
-      }}
-      onClick={() => {
-        if (drawingFrom.current == null) onSelectConnector(null)
-      }}
-      onPointerMove={(e) => {
-        if (drawingFrom.current == null || !boardRef.current) return
-        const n = cellFromPoint(
-          boardRef.current,
-          e.clientX,
-          e.clientY,
-          board.cols,
-          board.rows,
-        )
-        setHoverCell(n)
-      }}
-      onPointerUp={(e) => {
-        if (drawingFrom.current == null) return
-        finishDraw(e.clientX, e.clientY)
-      }}
-      onPointerCancel={() => {
-        if (drawingFrom.current == null) return
-        drawingFrom.current = null
-        setHoverCell(null)
+  function handleConnectorPointerDown(
+    e: ReactPointerEvent,
+    n: number,
+  ) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Mouse / trackpad: single press-drag (desktop)
+    if (!isTouchLike(e.pointerType)) {
+      clearArm()
+      setHint(null)
+      beginDraw(n, e.pointerId, n)
+      return
+    }
+
+    const now = performance.now()
+    const prev = lastTap.current
+    const isDouble =
+      prev != null && prev.cell === n && now - prev.at < DOUBLE_TAP_MS
+
+    // Already armed: start drag from armed start toward this cell
+    if (armedFrom.current != null) {
+      if (armedFrom.current === n && isDouble) {
+        // Double-tap armed cell again → cancel
+        clearArm()
         onDragCancel()
-      }}
-      onDragOver={(e) => {
-        const types = [...e.dataTransfer.types]
-        if (!types.includes(TOOL_MIME) && !types.includes('text/plain')) return
-        e.preventDefault()
-        e.dataTransfer.dropEffect = 'copy'
-        if (!boardRef.current) return
-        setPaletteHover(
-          cellFromPoint(
+        setHint('Valg avbrutt')
+        lastTap.current = null
+        return
+      }
+      beginDraw(armedFrom.current, e.pointerId, n)
+      lastTap.current = null
+      return
+    }
+
+    if (isDouble) {
+      armCell(n)
+      lastTap.current = null
+      return
+    }
+
+    lastTap.current = { cell: n, at: now }
+    setHint('Dobbelttrykk en rute for å starte stigen')
+  }
+
+  return (
+    <div className="board-shell">
+      {isConnectorMode && (
+        <p className="board-hint" role="status">
+          {hint ??
+            'Mobil: dobbelttrykk start-rute, deretter dra eller trykk målrute. Mus: dra direkte.'}
+        </p>
+      )}
+      <div
+        ref={boardRef}
+        className={[
+          'board',
+          dragFrom != null || armedCell != null ? 'board-drawing' : '',
+          `tool-${activeTool}`,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={{
+          gridTemplateColumns: `repeat(${board.cols}, 1fr)`,
+          gridTemplateRows: `repeat(${board.rows}, 1fr)`,
+        }}
+        onClick={() => {
+          if (drawingFrom.current == null) onSelectConnector(null)
+        }}
+        onPointerMove={(e) => {
+          if (drawingFrom.current == null || !boardRef.current) return
+          const cell = cellFromPoint(
             boardRef.current,
             e.clientX,
             e.clientY,
             board.cols,
             board.rows,
-          ),
-        )
-      }}
-      onDragLeave={() => setPaletteHover(null)}
-      onDrop={(e) => {
-        const raw =
-          e.dataTransfer.getData(TOOL_MIME) ||
-          e.dataTransfer.getData('text/plain')
-        if (!raw) return
-        e.preventDefault()
-        setPaletteHover(null)
-        if (!boardRef.current) return
-        const cell = cellFromPoint(
-          boardRef.current,
-          e.clientX,
-          e.clientY,
-          board.cols,
-          board.rows,
-        )
-        if (cell == null) return
-        applyToolToCell(cell, raw as ToolId)
-      }}
-    >
-      {cells.map(({ n }) => {
-        const isStart = n === 1
-        const isEnd = n === board.rows * board.cols
-        const isDragSource = dragFrom === n
-        const effect = effectByCell.get(n)
-        const placedTone = connectorFromByCell.get(n)
+          )
+          setHoverCell(cell)
+        }}
+        onPointerUp={(e) => {
+          if (drawingFrom.current == null) return
+          finishDraw(e.clientX, e.clientY)
+        }}
+        onPointerCancel={() => {
+          if (drawingFrom.current == null) return
+          drawingFrom.current = null
+          setHoverCell(null)
+          if (armedFrom.current != null) {
+            onDragStart(armedFrom.current)
+            setHint('Prøv igjen — dra eller trykk på en annen rute')
+          } else {
+            onDragCancel()
+            setHint(null)
+          }
+        }}
+      >
+        {cells.map(({ n }) => {
+          const isStart = n === 1
+          const isEnd = n === board.rows * board.cols
+          const isDragSource = dragFrom === n || armedCell === n
+          const effect = effectByCell.get(n)
+          const placedTone = connectorFromByCell.get(n)
 
-        let dragTone: 'ladder' | 'snake' | null = null
-        if (
-          isConnectorMode &&
-          isDragSource &&
-          dragFrom != null &&
-          hoverCell != null &&
-          hoverCell !== dragFrom
-        ) {
-          dragTone = hoverCell > dragFrom ? 'ladder' : 'snake'
-        }
+          let dragTone: 'ladder' | 'snake' | null = null
+          if (
+            isConnectorMode &&
+            isDragSource &&
+            dragFrom != null &&
+            hoverCell != null &&
+            hoverCell !== dragFrom
+          ) {
+            dragTone = hoverCell > dragFrom ? 'ladder' : 'snake'
+          }
 
-        const fillTone = dragTone ?? placedTone ?? null
-        const isPaletteTarget = paletteHover === n
+          const fillTone = dragTone ?? placedTone ?? null
+          const isArmed = armedCell === n && fillTone == null
 
-        return (
-          <div
-            key={n}
-            className={[
-              'cell',
-              isStart ? 'cell-start' : '',
-              isEnd ? 'cell-end' : '',
-              fillTone === 'ladder' ? 'cell-fill-ladder' : '',
-              fillTone === 'snake' ? 'cell-fill-snake' : '',
-              effect ? `cell-effect cell-effect-${effect.kind}` : '',
-              isPaletteTarget ? 'cell-palette-target' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            onPointerDown={(e) => {
-              if (e.button !== 0) return
-              if (isConnectorMode) {
-                e.preventDefault()
-                boardRef.current?.setPointerCapture(e.pointerId)
-                drawingFrom.current = n
-                setHoverCell(n)
-                onDragStart(n)
-                return
-              }
-              if (isEraseMode || isEffectTool(activeTool)) {
-                e.preventDefault()
-                applyToolToCell(n, activeTool)
-              }
-            }}
-          >
-            {effect && (
-              <span className="cell-fill" title={getTool(effect.kind).label}>
-                <span className="cell-glyph">{getTool(effect.kind).glyph}</span>
-              </span>
-            )}
-            {fillTone && !effect && (
-              <span className="cell-fill" aria-hidden>
-                <span className="cell-glyph">{fillTone === 'ladder' ? '↑' : '↓'}</span>
-              </span>
-            )}
-            <span className="cell-number">{n}</span>
-          </div>
-        )
-      })}
+          return (
+            <div
+              key={n}
+              className={[
+                'cell',
+                isStart ? 'cell-start' : '',
+                isEnd ? 'cell-end' : '',
+                fillTone === 'ladder' ? 'cell-fill-ladder' : '',
+                fillTone === 'snake' ? 'cell-fill-snake' : '',
+                isArmed ? 'cell-armed' : '',
+                effect ? `cell-effect cell-effect-${effect.kind}` : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              onPointerDown={(e) => {
+                if (e.button !== 0) return
+                if (isConnectorMode) {
+                  handleConnectorPointerDown(e, n)
+                  return
+                }
+                if (isEraseMode || isEffectTool(activeTool)) {
+                  e.preventDefault()
+                  applyToolToCell(n, activeTool)
+                }
+              }}
+            >
+              {effect && (
+                <span className="cell-fill" title={getTool(effect.kind).label}>
+                  <span className="cell-glyph">{getTool(effect.kind).glyph}</span>
+                </span>
+              )}
+              {fillTone && !effect && (
+                <span className="cell-fill" aria-hidden>
+                  <span className="cell-glyph">
+                    {fillTone === 'ladder' ? '↑' : '↓'}
+                  </span>
+                </span>
+              )}
+              <span className="cell-number">{n}</span>
+            </div>
+          )
+        })}
 
-      <ConnectorLayer
-        board={board}
-        connectors={connectors}
-        draftFrom={isConnectorMode ? dragFrom : null}
-        draftTo={isConnectorMode ? hoverCell : null}
-        selectedId={selectedId}
-        onSelect={onSelectConnector}
-      />
+        <ConnectorLayer
+          board={board}
+          connectors={connectors}
+          draftFrom={isConnectorMode ? dragFrom : null}
+          draftTo={isConnectorMode ? hoverCell : null}
+          selectedId={selectedId}
+          onSelect={onSelectConnector}
+        />
+      </div>
     </div>
   )
 }

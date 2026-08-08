@@ -23,7 +23,8 @@ export const TOOLS: ToolDef[] = [
     id: 'connector',
     label: 'Stige / slange',
     short: 'Stige',
-    description: 'Dra fra én rute til en annen på brettet. Opp = stige, ned = slange.',
+    description:
+      'Dobbelttrykk start-rute, deretter dra eller trykk målrute. På mus kan du også dra direkte.',
     glyph: '⇅',
   },
   {
@@ -65,7 +66,7 @@ export const TOOLS: ToolDef[] = [
     id: 'erase',
     label: 'Viskelær',
     short: 'Slett',
-    description: 'Dra eller klikk for å fjerne effekt, stige eller slange.',
+    description: 'Trykk på en rute for å fjerne effekt, stige eller slange.',
     glyph: '×',
   },
 ]
@@ -87,5 +88,3 @@ export function getTool(id: ToolId): ToolDef {
 export function isEffectTool(id: ToolId): id is EffectKind {
   return EFFECT_TOOLS.includes(id as EffectKind)
 }
-
-export const TOOL_MIME = 'application/x-stigespill-tool'

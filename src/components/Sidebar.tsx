@@ -1,7 +1,6 @@
 import { connectorKind, type Connector } from '../lib/connectors'
 import { effectLabel, type CellEffect } from '../lib/effects'
 import { PAPER_SIZES, type PaperId } from '../lib/paper'
-import { TOOLS, TOOL_MIME, type ToolId } from '../lib/tools'
 import type { BoardConfig } from '../lib/board'
 
 interface Props {
@@ -9,12 +8,10 @@ interface Props {
   board: BoardConfig
   connectors: Connector[]
   effects: CellEffect[]
-  activeTool: ToolId
   selectedId: string | null
   message: string | null
   onPaperChange: (id: PaperId) => void
   onGridChange: (rows: number, cols: number) => void
-  onToolChange: (tool: ToolId) => void
   onRemoveConnector: (id: string) => void
   onRemoveEffect: (id: string) => void
   onClear: () => void
@@ -31,18 +28,15 @@ export function Sidebar({
   board,
   connectors,
   effects,
-  activeTool,
   selectedId,
   message,
   onPaperChange,
   onGridChange,
-  onToolChange,
   onRemoveConnector,
   onRemoveEffect,
   onClear,
 }: Props) {
   const paper = PAPER_SIZES.find((p) => p.id === paperId)!
-  const active = TOOLS.find((t) => t.id === activeTool)!
   const hasItems = connectors.length > 0 || effects.length > 0
 
   return (
@@ -51,42 +45,6 @@ export function Sidebar({
         <p className="brand-name">Stigespill</p>
         <p className="brand-tag">Design ditt eget brett til trykk</p>
       </header>
-
-      <section className="panel">
-        <h2>Verktøy</h2>
-        <p className="hint">Velg, eller dra direkte inn på brettet.</p>
-        <ul className="tool-list">
-          {TOOLS.map((tool) => (
-            <li key={tool.id}>
-              <button
-                type="button"
-                className={`tool-item tool-${tool.id}${activeTool === tool.id ? ' active' : ''}`}
-                draggable={tool.id !== 'connector'}
-                onClick={() => onToolChange(tool.id)}
-                onDragStart={(e) => {
-                  if (tool.id === 'connector') {
-                    e.preventDefault()
-                    return
-                  }
-                  e.dataTransfer.setData(TOOL_MIME, tool.id)
-                  e.dataTransfer.setData('text/plain', tool.id)
-                  e.dataTransfer.effectAllowed = 'copy'
-                  onToolChange(tool.id)
-                }}
-              >
-                <span className="tool-glyph" aria-hidden>
-                  {tool.glyph}
-                </span>
-                <span className="tool-copy">
-                  <span className="tool-label">{tool.label}</span>
-                  <span className="tool-desc">{tool.description}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <p className="meta tool-hint">{active.description}</p>
-      </section>
 
       <section className="panel">
         <h2>Papirstørrelse</h2>

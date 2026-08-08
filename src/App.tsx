@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Board } from './components/Board'
 import { Sidebar } from './components/Sidebar'
+import { ToolDock } from './components/ToolDock'
 import { getPaper } from './lib/paper'
 import { useBoardEditor } from './lib/useBoardEditor'
 import './App.css'
@@ -31,12 +32,10 @@ export default function App() {
         board={state.board}
         connectors={state.connectors}
         effects={state.effects}
-        activeTool={state.activeTool}
         selectedId={selectedId}
         message={state.message}
         onPaperChange={setPaper}
         onGridChange={setGrid}
-        onToolChange={setTool}
         onRemoveConnector={(id) => {
           removeConnector(id)
           setSelectedId(null)
@@ -49,6 +48,8 @@ export default function App() {
       />
 
       <main className="stage">
+        <ToolDock activeTool={state.activeTool} onToolChange={setTool} />
+
         <div
           className="paper-frame"
           style={{ aspectRatio: `${paper.widthMm} / ${paper.heightMm}` }}
